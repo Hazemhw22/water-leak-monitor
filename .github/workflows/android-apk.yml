@@ -33,15 +33,12 @@ jobs:
           echo "JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64" >> "$GITHUB_ENV"
           echo "/usr/lib/jvm/java-17-openjdk-amd64/bin" >> "$GITHUB_PATH"
 
-      # يوفّر build-tools (بداخلها aidl) و platform و NDK — يحل خطأ "Aidl not found"
+      # build-tools (فيها aidl). الحزم في سطر واحد مفصول بمسافات — صيغة multiline في YAML تُمرَّر كاسم حزمة واحد فيُفشل sdkmanager.
+      # NDK يحمّله Buildozer حسب buildozer.spec؛ لا نثبّته هنا لتفادي "package not found" لرقم NDK.
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
         with:
-          packages: |
-            platform-tools
-            platforms;android-33
-            build-tools;33.0.2
-            ndk;25.2.9519653
+          packages: platform-tools platforms;android-33 build-tools;33.0.2
           log-accepted-android-sdk-licenses: true
 
       - name: Install Buildozer and Cython
