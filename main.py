@@ -1,5 +1,5 @@
 """
-مراقبة تسريب المياه — Splash، صلاحيات، بدء المراقبة، Edge AI، تنبيه، إجراءات.
+منظومة طيف الماء الذكية — Splash، صلاحيات، مراقبة، Edge AI، تنبيه، إجراءات.
 """
 
 from __future__ import annotations
@@ -35,6 +35,11 @@ ASSETS = ROOT / "assets"
 LOGO_PATH = ASSETS / "logo.png"
 ALARM_WAV = ASSETS / "alarm.wav"
 LIVE_FRAME = ASSETS / "_live_frame.png"
+
+APP_NAME = "منظومة طيف الماء الذكية"
+APP_TAGLINE = (
+    "منظومة ذكية للأمن المائي تعتمد على تحليل الأطياف الرقمية والكشف المبكر عن التلوث"
+)
 
 # رقم لرسالة SMS للأهل (اتركه فارغاً لفتح واجهة الرسائل بدون رقم محدد على أندرويد)
 FAMILY_SMS_NUMBER = ""
@@ -125,11 +130,20 @@ class SplashScreen(MDScreen):
             )
         box.add_widget(
             MDLabel(
-                text="مراقب التسريب والرطوبة",
+                text=APP_NAME,
                 halign="center",
                 theme_text_color="Custom",
                 text_color=(1, 1, 1, 1),
                 font_style="H4",
+            )
+        )
+        box.add_widget(
+            MDLabel(
+                text=APP_TAGLINE,
+                halign="center",
+                theme_text_color="Custom",
+                text_color=(0.78, 0.88, 0.98, 1),
+                font_style="Body1",
             )
         )
         box.add_widget(
@@ -172,9 +186,9 @@ class PermissionsScreen(MDScreen):
         box.add_widget(
             MDLabel(
                 text=(
-                    "يحتاج التطبيق إلى:\n"
-                    "• الكاميرا — لمراقبة الجدران لحظياً عبر نموذج الذكاء الاصطناعي على الجهاز.\n"
-                    "• الميكروفون — جاهز لاحقاً لاكتشاف أصوات تسريب (Edge AI).\n"
+                    f"يحتاج «{APP_NAME}» إلى:\n"
+                    "• الكاميرا — تحليل أطياف رقمية ومراقبة لحظية عبر نموذج الذكاء الاصطناعي على الجهاز.\n"
+                    "• الميكروفون — جاهز لاحقاً للكشف المبكر عن أصوات تسريب أو شذوذ (Edge AI).\n"
                     "• التخزين — لقراءة الصور عند الحاجة."
                 ),
                 halign="right",
@@ -212,7 +226,15 @@ class MainScreen(MDScreen):
         )
 
         root.add_widget(
-            MDLabel(text="لوحة التحكم", halign="right", font_style="H5")
+            MDLabel(text=APP_NAME, halign="right", font_style="H5")
+        )
+        root.add_widget(
+            MDLabel(
+                text=APP_TAGLINE,
+                halign="right",
+                theme_text_color="Secondary",
+                font_style="Caption",
+            )
         )
 
         self.status_label = MDLabel(
@@ -245,7 +267,11 @@ class MainScreen(MDScreen):
             size_hint=(1, 0.42),
         )
         preview.add_widget(
-            MDLabel(text="معاينة الكاميرا (Edge AI)", halign="right", font_style="Caption")
+            MDLabel(
+                text="معاينة الكاميرا — تحليل أطياف رقمية (Edge AI)",
+                halign="right",
+                font_style="Caption",
+            )
         )
         cam_box = MDBoxLayout(size_hint=(1, 1))
         try:
@@ -344,7 +370,7 @@ class MainScreen(MDScreen):
         if self.app.sensor:
             v = self.app.sensor.value
             self.detail_label.text = (
-                f"الحساس (محاكاة): {v:.1f}% — الميكروفون: جاهز للتوسع لاحقاً"
+                f"الحساس (محاكاة): {v:.1f}% — الميكروفون: جاهز للكشف المبكر لاحقاً"
             )
 
 
@@ -366,7 +392,7 @@ class AlertScreen(MDScreen):
 
         self.box.add_widget(
             MDLabel(
-                text="تحذير: تم كشف تسريب!",
+                text="تحذير: تم رصد مؤشر خطر للأمن المائي!",
                 halign="center",
                 theme_text_color="Custom",
                 text_color=(1, 1, 1, 1),
@@ -493,7 +519,9 @@ class ImageAnalysisScreen(MDScreen):
             spacing=dp(12),
             size_hint=(1, 1),
         )
-        box.add_widget(MDLabel(text="تحليل صورة (يدوي)", halign="right", font_style="H5"))
+        box.add_widget(
+            MDLabel(text="تحليل صورة — أطياف ورطوبة (يدوي)", halign="right", font_style="H5")
+        )
         self.result_label = MDLabel(
             text="اختر صورة من المعرض أو الملفات.",
             halign="right",
@@ -563,7 +591,7 @@ class WaterMonitorApp(MDApp):
     monitoring_active: bool = False
 
     def build(self):
-        self.title = "مراقب التسريب"
+        self.title = APP_NAME
         self.family_phone = FAMILY_SMS_NUMBER
         init_db()
 
@@ -590,9 +618,9 @@ class WaterMonitorApp(MDApp):
             from plyer import notification
 
             notification.notify(
-                title="تحذير: تم كشف تسريب!",
-                message="راجع التطبيق فوراً.",
-                app_name="مراقب التسريب",
+                title="تحذير: خطر أمن مائي — طيف الماء",
+                message=f"راجع {APP_NAME} فوراً.",
+                app_name=APP_NAME,
                 timeout=8,
             )
         except Exception:
@@ -621,7 +649,10 @@ class WaterMonitorApp(MDApp):
             pass
 
     def open_sms_to_family(self):
-        body = "تحذير: تم رصد تسريب محتمل عبر تطبيق المراقبة. يرجى التحقق من المنزل."
+        body = (
+            f"تنبيه من «{APP_NAME}»: تم رصد مؤشر خطر على جودة المياه أو التلوث. "
+            "يرجى التحقق من المنزل فوراً."
+        )
         phone = (self.family_phone or "").strip()
         if platform == "android":
             try:

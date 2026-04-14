@@ -1,6 +1,6 @@
 [app]
 
-title = مراقب التسريب
+title = منظومة طيف الماء الذكية
 package.name = watermonitor
 package.domain = org.example.watermonitor
 
